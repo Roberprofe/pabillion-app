@@ -1,0 +1,46 @@
+name: Comprobar aplicación
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: daw
+          POSTGRES_PASSWORD: daw_local
+          POSTGRES_DB: gestion_deportiva
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U daw -d gestion_deportiva"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://daw:daw_local@localhost:5433/gestion_deportiva?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run db:validate
+      - run: pnpm run db:deploy
+      - name: Comprobar que repetir los datos de ejemplo no los duplica
+        run: |
+          pnpm run db:seed
+          pnpm run db:seed
+          pnpm run db:check --seeded
+      - run: pnpm run check

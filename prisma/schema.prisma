@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Ejemplo inicial de relación. El modelo completo se diseñará con la clase.
+model Centro {
+  id         String    @id @default(cuid())
+  nombre     String    @unique
+  creadoEn   DateTime  @default(now())
+  espacios   Espacio[]
+}
+
+model Espacio {
+  id       String  @id @default(cuid())
+  nombre   String
+  activo   Boolean @default(true)
+  centroId String
+  centro   Centro  @relation(fields: [centroId], references: [id], onDelete: Restrict)
+
+  @@unique([centroId, nombre])
+}

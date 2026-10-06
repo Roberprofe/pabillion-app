@@ -1,0 +1,8 @@
+# Solo estos paquetes pueden ejecutar scripts durante la instalación.
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - prisma
+  - esbuild
+  - sharp
+  - unrs-resolver
