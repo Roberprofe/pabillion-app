@@ -65,3 +65,4 @@ No subáis `.env` ni datos reales. No borréis el lockfile, reinstaléis shadcn 
 - [Base de datos y migraciones](docs/BASE_DE_DATOS.md).
 - [Comandos básicos y avanzados](docs/COMANDOS.md).
 - [Issues, ramas, revisiones y PRs](CONTRIBUTING.md).
+- [Ejemplo de lectura en servidor con Prisma](docs/EJEMPLO_FETCHING.md).

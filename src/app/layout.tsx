@@ -24,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/centros" className="hover:underline">Centros</Link>
               <Link href="/reservas" className="hover:underline">Reservas</Link>
               <Link href="/actividades" className="hover:underline">Actividades</Link>
+              <Link href="/ejemplo-fetching" prefetch={false} className="hover:underline">Ejemplo de datos</Link>
             </nav>
           </header>
           {children}
