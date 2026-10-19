@@ -94,3 +94,58 @@ También proponemos que los cambios de horario o espacio se comuniquen a las per
 
 Esta es nuestra propuesta inicial y debe coordinarse con los equipos A y B para definir cómo se gestionan los cierres de espacios, los cambios de sesiones y las reservas existentes.
 
+## 5. Propuesta de campos para Actividad y Sesión
+
+Los siguientes campos son una propuesta inicial para el diseño de los modelos `Actividad` y `Sesion`. No están implementados en el esquema actual de Prisma y deberán revisarse con los equipos A y B antes de tomar decisiones definitivas.
+
+### 5.1. Campos de Actividad
+
+| Campo | Finalidad | Relación |
+|---|---|---|
+| id | Identificar de forma única cada actividad. | Clave primaria. |
+| nombre | Indicar el nombre de la actividad. | Sin relación directa obligatoria. |
+| descripcion | Explicar en qué consiste la actividad y sus objetivos. | Sin relación directa obligatoria. |
+| duracionPrevista | Indicar la duración habitual de la actividad. | Sin relación directa obligatoria. |
+| participantesMaximos | Proponer un límite de participantes para la actividad. | Su relación con la capacidad del espacio debe coordinarse con los equipos A y B. |
+
+### 5.2. Campos de Sesion
+
+| Campo | Finalidad | Relación |
+|---|---|---|
+| id | Identificar de forma única cada sesión. | Clave primaria. |
+| actividadId | Identificar la actividad a la que pertenece la sesión. | Clave foránea hacia Actividad. |
+| espacioId | Identificar el espacio donde se realizará la sesión. | Clave foránea hacia Espacio. |
+| fechaHoraInicio | Indicar la fecha y hora de inicio. | Debe permitir comprobar conflictos de horario. |
+| fechaHoraFin | Indicar la fecha y hora de finalización. | Debe permitir comprobar conflictos de horario. |
+| estado | Indicar la situación de la sesión, por ejemplo, prevista, confirmada o cancelada. | Los valores permitidos están pendientes de acordar. |
+| ocupacionMaxima | Proponer un límite de ocupación específico para la sesión, si fuera necesario. | Debe coordinarse con la capacidad del espacio y el límite de participantes de la actividad. |
+
+### 5.3. Relaciones y decisiones pendientes
+
+Una actividad puede tener varias sesiones. Cada sesión pertenece a una actividad y está vinculada a un espacio concreto. La relación entre `Sesion` y `Espacio` permite identificar dónde se realizará cada sesión y comprobar posibles conflictos con otras sesiones o reservas.
+
+Los campos anteriores son propuestas de diseño, no cambios aprobados en la base de datos. Actualmente, el esquema de Prisma contiene los modelos `Centro` y `Espacio`, pero todavía no contiene los modelos `Actividad` y `Sesion`.
+
+Antes de implementar estos modelos, quedan pendientes las siguientes decisiones:
+
+- **Estado:** acordar los estados permitidos para una sesión y las transiciones entre ellos.
+- **Ocupación:** decidir si el límite de participantes se define en la actividad, en cada sesión, en el espacio o mediante una combinación de estos datos.
+- **Fecha y hora:** acordar cómo se almacenarán las fechas, las horas y la zona horaria, teniendo en cuenta las necesidades del proyecto.
+- **Disponibilidad:** coordinar con los equipos A y B cómo se comprobarán los cierres de espacios, las reservas y los conflictos de horario.
+
+## 6. Pruebas C-03
+
+Se han realizado comprobaciones manuales de la página `src/app/actividades/page.tsx` utilizando los datos de ejemplo de la base de datos local.
+
+| Prueba | Resultado esperado | Resultado obtenido |
+|---|---|---|
+| Acceder a la página de actividades. | Mostrar el título y la información de planificación. | Correcto. Se muestra «Actividades y sesiones» y el texto informativo. |
+| Consultar los centros registrados. | Mostrar los centros y agrupar sus espacios debajo de cada uno. | Correcto. Se muestra «Centro Lúa (ejemplo)» con sus espacios. |
+| Consultar los espacios del centro de ejemplo. | Mostrar los espacios activos ordenados por nombre. | Se muestran «Pista 1» y «Sala 2». La ordenación y el filtrado deben verificarse también con datos de prueba que permitan comprobar ambos comportamientos. |
+| Consultar un centro sin espacios activos. | Mantener visible el centro e indicar que no tiene espacios activos. | Pendiente de comprobar con datos de prueba específicos. |
+| Consultar una base de datos sin centros. | Mostrar un mensaje indicando que no hay centros registrados. | Correcto. Se observó el mensaje «No hay centros registrados» antes de cargar los datos de ejemplo. |
+| Comprobar el aviso de disponibilidad. | Advertir que la lista no confirma disponibilidad ni la existencia de actividades o sesiones. | Correcto. El aviso aparece en la página. |
+
+Las pruebas se han realizado en el entorno local. Las comprobaciones pendientes deberán realizarse con datos de prueba adecuados, sin eliminar registros existentes ni modificar datos compartidos. Los errores de conexión con la base de datos deben identificarse como errores y no confundirse con una lista vacía.
+
+Esta página sirve para consultar los centros y sus espacios activos como apoyo a la planificación. No implementa todavía la creación de actividades, la programación de sesiones ni la confirmación de reservas.
