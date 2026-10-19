@@ -145,11 +145,11 @@ Nosotros damos a los otros equipos los datos de los espacios, sus horarios, y su
 
 |   Caso   |   Datos preparados   |   Qué hago     |   Qué debería pasar   |   Qué pasó    |   Pendiente   |
 |:--------:|:--------------------:|:--------------:|:---------------------:|:-------------:|:-------------:|
-|   Datos ordenados |
-|   Renombrado  |
-|   Espacio activo/inactivo |
-|   Ausencia de centros y espacios  |
-|   Centro con dos espacios |
+|   Datos ordenados |Tres centros con nombres desordenados alfabñeticamente | Accedo al listado de centros | Aparecen los centros ordenados alfabéticamente | Aparecen los centros ordenados alfabéticamente |
+|   Renombrado  | Hay un centro con un nombre concreto a cambiar | Accedo a la base de datos y lo cambio emulando el comportamiento de una futura vista | El centro aparece listado en el orden que debe | El centro aparece listado en el orden que debe
+|   Espacio activo/inactivo | Un Espacio con su estado en activo y otro en inactivo | Cambio ambos al valor opuesto | Ambos centros aparecen con el valor opuesto | ambos centros aparecen con el valor opuesto
+|   Ausencia de centros y espacios  | La lista de centros y espacio vacía | Compruebo que el mensaje conforme no hay centros | Aparece el mensaje &#58; Actualmente no hay centros registrados | Aparece el mensaje &#58; Actualmente no hay centros registrados
+|   Centro con dos espacios |Un centro con dos espacios asociados | Accedo a la vista de centros y espacios para consultar el centro | Se lista el centro con los dos espacios asociados | Se lista el centro con los dos espacios asociados
    
 
 
