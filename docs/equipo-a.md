@@ -140,3 +140,16 @@ Nosotros damos a los otros equipos los datos de los espacios, sus horarios, y su
 - Los solicitantes pueden cancelar sus reservas. ¿Hay una hora límite antes de la propia reserva para hacerlo?
 
 - Supongamos que hay dos solicitudes conflictivas y una de ellas se aprueba. ¿Queda la otra solicitud rechazada definitivamente o se permite que siga pendiente por si la primera se cancela? ¿A partir de qué período se rechaza de forma definitiva?
+
+## Pruebas A-03
+
+|   Caso   |   Datos preparados   |   Qué hago     |   Qué debería pasar   |   Qué pasó    |   Pendiente   |
+|:--------:|:--------------------:|:--------------:|:---------------------:|:-------------:|:-------------:|
+|   Datos ordenados |
+|   Renombrado  |
+|   Espacio activo/inactivo |
+|   Ausencia de centros y espacios  |
+|   Centro con dos espacios |
+   
+
+
