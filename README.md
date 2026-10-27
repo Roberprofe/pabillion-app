@@ -38,7 +38,7 @@ Clonad el repositorio, abrid su carpeta en VS Code y arrancad Docker.
    pnpm run dev
    ```
 
-3. Abrid `http://localhost:3000`. Las páginas son puntos de partida, no funciones terminadas. La base estará vacía; podéis cargar ejemplos con `pnpm run db:seed`.
+3. Abrid `http://localhost:3000`. Las páginas son puntos de partida, no funciones terminadas. La base estará vacía; podéis cargar ejemplos completos con `pnpm run db:seed`: usuarios ficticios, centros, espacios, horarios, cierres, reservas, actividades y sesiones. Consultad los [casos de prueba y fechas](docs/DATOS_DE_EJEMPLO.md). Los usuarios del ejemplo no tienen login.
 
 ## Cada día
 
@@ -63,6 +63,7 @@ No subáis `.env` ni datos reales. No borréis el lockfile, reinstaléis shadcn 
 
 - [Carpetas, stack y componentes](docs/ENTENDER_EL_REPOSITORIO.md).
 - [Base de datos y migraciones](docs/BASE_DE_DATOS.md).
+- [Contenido y uso del seed completo](docs/DATOS_DE_EJEMPLO.md).
 - [Comandos básicos y avanzados](docs/COMANDOS.md).
 - [Issues, ramas, revisiones y PRs](CONTRIBUTING.md).
 - [Ejemplo de lectura en servidor con Prisma](docs/EJEMPLO_FETCHING.md).

@@ -7,20 +7,149 @@ datasource db {
   provider = "postgresql"
 }
 
-// Ejemplo inicial de relación. El modelo completo se diseñará con la clase.
+enum RolUsuario {
+  USUARIO
+  GESTOR
+  ADMIN
+}
+
+enum DiaSemana {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  RECHAZADA
+  CANCELADA
+}
+
+enum EstadoSesion {
+  PROGRAMADA
+  CANCELADA
+}
+
+model Usuario {
+  id            String     @id @default(cuid())
+  nombre        String
+  email         String     @unique
+  rol           RolUsuario @default(USUARIO)
+  activo        Boolean    @default(true)
+  creadoEn      DateTime   @default(now())
+  actualizadoEn DateTime   @default(now()) @updatedAt
+
+  reservasSolicitadas Reserva[] @relation("SolicitanteReserva")
+  reservasResueltas   Reserva[] @relation("ResponsableReserva")
+}
+
 model Centro {
-  id         String    @id @default(cuid())
-  nombre     String    @unique
-  creadoEn   DateTime  @default(now())
-  espacios   Espacio[]
+  id            String   @id @default(cuid())
+  nombre        String   @unique
+  activo        Boolean  @default(true)
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @default(now()) @updatedAt
+
+  espacios Espacio[]
 }
 
 model Espacio {
-  id       String  @id @default(cuid())
-  nombre   String
-  activo   Boolean @default(true)
-  centroId String
-  centro   Centro  @relation(fields: [centroId], references: [id], onDelete: Restrict)
+  id            String   @id @default(cuid())
+  nombre        String
+  activo        Boolean  @default(true)
+  centroId      String
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @default(now()) @updatedAt
+
+  centro   Centro            @relation(fields: [centroId], references: [id], onDelete: Restrict)
+  horarios HorarioApertura[]
+  cierres  Cierre[]
+  reservas Reserva[]
+  sesiones Sesion[]
 
   @@unique([centroId, nombre])
+}
+
+model HorarioApertura {
+  id            String    @id @default(cuid())
+  espacioId     String
+  diaSemana     DiaSemana
+  inicioMinuto  Int
+  finMinuto     Int
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @default(now()) @updatedAt
+
+  espacio Espacio @relation(fields: [espacioId], references: [id], onDelete: Restrict)
+
+  @@unique([espacioId, diaSemana, inicioMinuto])
+}
+
+model Cierre {
+  id            String   @id @default(cuid())
+  espacioId     String
+  inicio        DateTime @db.Timestamptz(3)
+  fin           DateTime @db.Timestamptz(3)
+  motivo        String
+  activo        Boolean  @default(true)
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @default(now()) @updatedAt
+
+  espacio Espacio @relation(fields: [espacioId], references: [id], onDelete: Restrict)
+
+  @@index([espacioId, activo, inicio, fin])
+}
+
+model Reserva {
+  id               String        @id @default(cuid())
+  espacioId        String
+  solicitanteId    String
+  inicio           DateTime      @db.Timestamptz(3)
+  fin              DateTime      @db.Timestamptz(3)
+  estado           EstadoReserva @default(PENDIENTE)
+  resueltaPorId    String?
+  resueltaEn       DateTime?     @db.Timestamptz(3)
+  motivoResolucion String?
+  creadoEn         DateTime      @default(now())
+  actualizadoEn    DateTime      @default(now()) @updatedAt
+
+  espacio     Espacio @relation(fields: [espacioId], references: [id], onDelete: Restrict)
+  solicitante Usuario @relation("SolicitanteReserva", fields: [solicitanteId], references: [id], onDelete: Restrict)
+  resueltaPor Usuario? @relation("ResponsableReserva", fields: [resueltaPorId], references: [id], onDelete: Restrict)
+
+  @@index([espacioId, estado, inicio, fin])
+  @@index([solicitanteId, inicio])
+  @@index([resueltaPorId])
+}
+
+model Actividad {
+  id            String   @id @default(cuid())
+  nombre        String
+  descripcion   String?
+  activo        Boolean  @default(true)
+  creadoEn      DateTime @default(now())
+  actualizadoEn DateTime @default(now()) @updatedAt
+
+  sesiones Sesion[]
+}
+
+model Sesion {
+  id            String       @id @default(cuid())
+  actividadId   String
+  espacioId     String
+  inicio        DateTime     @db.Timestamptz(3)
+  fin           DateTime     @db.Timestamptz(3)
+  estado        EstadoSesion @default(PROGRAMADA)
+  creadoEn      DateTime     @default(now())
+  actualizadoEn DateTime     @default(now()) @updatedAt
+
+  actividad Actividad @relation(fields: [actividadId], references: [id], onDelete: Restrict)
+  espacio   Espacio   @relation(fields: [espacioId], references: [id], onDelete: Restrict)
+
+  @@index([espacioId, estado, inicio, fin])
+  @@index([actividadId, inicio])
 }

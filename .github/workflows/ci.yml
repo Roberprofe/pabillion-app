@@ -38,7 +38,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run db:validate
       - run: pnpm run db:deploy
-      - name: Comprobar que repetir los datos de ejemplo no los duplica
+      - name: Comprobar seed completo, relaciones y repetición sin duplicados
         run: |
           pnpm run db:seed
           pnpm run db:seed

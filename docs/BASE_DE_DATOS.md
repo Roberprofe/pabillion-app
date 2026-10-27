@@ -14,11 +14,13 @@ Utilizad la configuración Docker incluida para seguir el mismo procedimiento. S
 
 La URL de las herramientas Prisma está en `prisma.config.ts`, no en el bloque `datasource` de `schema.prisma`. El generador es `prisma-client`, con salida explícita `src/generated/prisma`. Para importar el cliente se usa su archivo `client`, y al crearlo se pasa el adaptador `PrismaPg`. Encontraréis ejemplos antiguos con una configuración distinta: comparad siempre su versión con la de este repo.
 
-## Modelo inicial
+## Modelo compartido
 
-El esquema contiene únicamente **Centro → Espacio**. Un centro puede tener varios espacios; un espacio pertenece a un centro. Los identificadores los genera Prisma. La combinación centro/nombre de espacio es única, de modo que no se duplica el mismo nombre dentro del mismo centro. La eliminación de un centro con espacios se restringe para evitar una pérdida accidental de la relación.
+El esquema contiene ocho modelos: **Usuario, Centro, Espacio, HorarioApertura, Cierre, Reserva, Actividad y Sesion**. Una reserva utiliza un espacio y tiene un usuario solicitante; cuando se resuelve puede identificar a otro usuario responsable. Una actividad tiene cero o varias sesiones y cada sesión ocupa un espacio durante un intervalo.
 
-Es una relación pequeña para comprobar la infraestructura. No representa todavía el modelo final. Los horarios, cierres, reservas, sesiones y permisos se diseñarán con las issues de los equipos. El campo `activo` no implementa por sí solo reglas de disponibilidad.
+Se conservan las relaciones Centro/Espacio y los datos iniciales. El nombre de un espacio es único dentro de su centro. Las relaciones restringen el borrado de registros referenciados para no destruir el historial. Las fechas nuevas de creación de espacios antiguos se rellenan al migrar: no reconstruyen su fecha histórica real.
+
+Los roles USUARIO, GESTOR y ADMIN están representados, pero **no hay login ni autorización implementados**. Los índices y enums tampoco comprueban automáticamente horarios, permisos, cambios de estado o solapamientos. El campo activo no significa disponible. Las operaciones de escritura deberán validar las reglas en servidor cuando se desarrollen.
 
 ## Cambiar el esquema en equipo
 
@@ -37,9 +39,15 @@ Los pasos siguientes se realizan en vuestra base local. Aunque los datos sean in
 
 Podéis cargar los datos ficticios en vuestra base local. Si queréis cambiar el archivo de seed que comparten todos los equipos, coordinadlo y revisad el cambio mediante PR.
 
-`pnpm run db:seed` añade un centro y dos espacios ficticios con operaciones que evitan duplicarlos si se repite. Es un comando explícito: ni `pnpm install --frozen-lockfile` ni `db:deploy` lo ejecutan. Usad los mismos ejemplos para discutir reglas, pero recordad que las bases de cada ordenador son independientes.
+Después de actualizar el repo, ejecutad `pnpm run db:deploy` y `pnpm run db:generate`; después `pnpm run db:seed` carga los ejemplos del modelo completo. En una base vacía crea 8 usuarios, 5 centros, 7 espacios, 20 tramos de apertura, 5 cierres, 12 reservas, 5 actividades y 8 sesiones. Los casos y fechas están en [Datos de ejemplo](DATOS_DE_EJEMPLO.md).
+
+El seed es explícito: ni `pnpm install --frozen-lockfile` ni `db:deploy` lo ejecutan. Reutiliza el centro y espacios del seed anterior, no borra datos y no actualiza registros ya existentes. Se puede repetir sin duplicar sus claves de ejemplo ni deshacer vuestras ediciones; no es un comando de restauración. Si faltan padres o hay conflictos de claves después de modificaciones manuales, puede detenerse y revertir su transacción: consultad antes de borrar nada.
+
+Solo permite conexiones locales (localhost, 127.0.0.1, ::1 o el servicio Docker postgres) y rechaza NODE_ENV=production. No cambiéis esas protecciones para cargar datos en una base compartida. Los usuarios ficticios no tienen contraseña ni permiten iniciar sesión.
 
 `pnpm run db:check` hace una consulta de conexión y lista centros y número de espacios. Una lista vacía es correcta si no ejecutasteis el seed. Este comando comprueba infraestructura, no el funcionamiento futuro de reservas.
+
+`pnpm run db:check --seeded` es una comprobación de **CI sobre una base vacía recién poblada**: exige las cantidades y ejemplos originales y verifica estados, relaciones y ausencia de ocupaciones confirmadas incompatibles en ese conjunto. No se usa para juzgar una base de alumno con ejemplos editados o registros propios. No implementa las reglas de negocio de la aplicación.
 
 ## Qué se sube al repositorio
 
