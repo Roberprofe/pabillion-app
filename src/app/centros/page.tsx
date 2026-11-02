@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import { obtenerCentrosConEspacios } from "@/lib/data/centros";
+import { obtenerEspaciosConCierres, obtenerEspaciosConHorarios, obtenerEspaciosEnCentro } from "@/lib/data/espacios";
 
 export const metadata: Metadata = {
   title: "Centros y Espacios",
@@ -13,7 +15,9 @@ export const metadata: Metadata = {
 export default async function CentrosPage() {
   await connection(); 
   const centros = await obtenerCentrosConEspacios();
-
+  const espacios = await obtenerEspaciosEnCentro();
+  const horarios = await obtenerEspaciosConHorarios();
+  const cierres = await obtenerEspaciosConCierres();
   
   
   return (
