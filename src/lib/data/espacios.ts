@@ -17,28 +17,22 @@ export async function obtenerEspaciosEnCentro() {
   });
 }
 
-export async function obtenerEspaciosConHorarios(){
+export async function obtenerEspaciosConHorariosCierres(){
     return getPrisma().espacio.findMany({
         orderBy: { nombre: 'asc'},
         select: {
             id: true,
             nombre: true,
+            centro: {
+                select: { id: true, nombre: true },
+            },
             horarios: {
                 select: {id: true, diaSemana: true, inicioMinuto: true, finMinuto:true},
-            }
-        }
-    })
-}
-
-export async function obtenerEspaciosConCierres(){
-    return getPrisma().espacio.findMany({
-        orderBy: { nombre: 'asc'},
-        select: {
-            id: true,
-            nombre: true,
+            },
             cierres: {
                 select: {id: true, inicio: true, fin: true, motivo:true, activo:true},
-            }
-        }
-    })
+            },
+        },
+    });
 }
+
