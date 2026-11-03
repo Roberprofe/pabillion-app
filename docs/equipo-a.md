@@ -145,11 +145,19 @@ Nosotros damos a los otros equipos los datos de los espacios, sus horarios, y su
 
 |   Caso   |   Datos preparados   |   Qué hago     |   Qué debería pasar   |   Qué pasó    |   Pendiente   |
 |:--------:|:--------------------:|:--------------:|:---------------------:|:-------------:|:-------------:|
-|   Datos ordenados |Tres centros con nombres desordenados alfabñeticamente | Accedo al listado de centros | Aparecen los centros ordenados alfabéticamente | Aparecen los centros ordenados alfabéticamente |
+|   Datos ordenados |Tres centros con nombres desordenados alfabeticamente | Accedo al listado de centros | Aparecen los centros ordenados alfabéticamente | Aparecen los centros ordenados alfabéticamente |
 |   Renombrado  | Hay un centro con un nombre concreto a cambiar | Accedo a la base de datos y lo cambio emulando el comportamiento de una futura vista | El centro aparece listado en el orden que debe | El centro aparece listado en el orden que debe
 |   Espacio activo/inactivo | Un Espacio con su estado en activo y otro en inactivo | Cambio ambos al valor opuesto | Ambos centros aparecen con el valor opuesto | ambos centros aparecen con el valor opuesto
 |   Ausencia de centros y espacios  | La lista de centros y espacio vacía | Compruebo que el mensaje conforme no hay centros | Aparece el mensaje &#58; Actualmente no hay centros registrados | Aparece el mensaje &#58; Actualmente no hay centros registrados
 |   Centro con dos espacios |Un centro con dos espacios asociados | Accedo a la vista de centros y espacios para consultar el centro | Se lista el centro con los dos espacios asociados | Se lista el centro con los dos espacios asociados
    
+## Pruebas A-04   
 
-
+|   Casos                           |   Datos preparados                                                 |   Esperado                                                                                         |   Observado    |   Pendiente   |
+|:---------------------------------:|:------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:|:--------------:|:-------------:|
+|Horario por día y hora             | Un espacio con horario de mañana y tarde                           | Muestra los horarios de todos los días tanto de mañana como de tarde ordenados por día y por hora  |Muestra los horarios de todos los días tanto de mañana como de tarde ordenados por día y por hora   ||
+|Formato HH:mm                      | Horario con inicio a una hora en punto que finaliza a otra y media | Aparece con el formato indicado independientemente de la hora y minutos                            |Aparece con el formato indicado independientemente de la hora y minutos||
+|Motivo, inicio y fin de cierres    | Espacio con un cierre                                              | Indica el motivo del cierre, la fecha de inicio y de finalización                                  |Indica el motivo del cierre, la fecha de inicio y de finalización||
+|Distinguir cierre anulado y activo | Un espacio con un cierre anulado y otro activo                     | Ambos cierres aparecen con estados correctos al que pertenecen                                     |Ambos cierres aparecen con estados correctos al que pertenecen||
+|Fechas Europe/Madrid               | Cierre con inicio y fin                                            | Las fechas aparecen con el formato correcto                                                        |Las fechas aparecen con el formato correcto||
+|Ausencia de horarios y cierres     | Espacio sin horarios ni cierres                                    | Ambos casos muestran mensajes personalizados que indican su ausencia                               | Ambos casos muestran mensajes personalizados que indican su ausencia||
