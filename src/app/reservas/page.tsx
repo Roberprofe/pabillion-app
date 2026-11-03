@@ -1,6 +1,18 @@
 import { connection } from "next/server";
 import { getPrisma } from "@/lib/prisma";
+import { obtenerReservas } from "@/lib/data/reservas";
 
+// Formateamos las fechas para que se vean como en la captura (d/m/yy, H:mm)
+function formatearFecha(fecha: Date | string | null) {
+  if (!fecha) return "—";
+  return new Date(fecha).toLocaleString("es-ES", {
+    day: "numeric",
+    month: "numeric",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default async function ReservasPage() {
   await connection();
@@ -11,6 +23,7 @@ export default async function ReservasPage() {
 
   let espacios;
   let centrosActivos;
+  let reservas;
 
 
   try {
@@ -48,8 +61,9 @@ export default async function ReservasPage() {
         nombre: "asc",
       },
     });
+    reservas = await obtenerReservas();
   } catch (error) {
-    console.error("Error al cargar los espacios y centros:", error);
+    console.error("Error al cargar los espacios o reservas:", error);
 
 
     return (
@@ -258,6 +272,90 @@ export default async function ReservasPage() {
           </div>
         </section>
       )}
+
+
+      {/* Añadimos la tabla de reservas al final de la página */}
+      <section className="mt-12 mb-12">
+        <h2 className="mb-6 text-xl font-bold">Reservas</h2>
+        <div className="rounded-xl border overflow-hidden">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 font-medium text-gray-700 border-b">
+                  Solicitante
+                </th>
+                <th className="px-4 py-3 font-medium text-gray-700 border-b">
+                  Espacio
+                </th>
+                <th className="px-4 py-3 font-medium text-gray-700 border-b">
+                  Centro
+                </th>
+                <th className="px-4 py-3 font-medium text-gray-700 border-b">
+                  Inicio
+                </th>
+                <th className="px-4 py-3 font-medium text-gray-700 border-b">
+                  Fin
+                </th>
+                <th className="px-4 py-3 font-medium text-gray-700 border-b">
+                  Estado
+                </th>
+                <th className="px-4 py-3 font-medium text-gray-700 border-b">
+                  Resolución
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {(reservas ?? []).map((reserva) => (
+                <tr key={reserva.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    {reserva.solicitante?.nombre ?? "—"}
+                  </td>
+                  <td className="px-4 py-3">{reserva.espacio?.nombre ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    {reserva.espacio?.centro?.nombre ?? "—"}
+                  </td>
+                  <td className="px-4 py-3">{formatearFecha(reserva.inicio)}</td>
+                  <td className="px-4 py-3">{formatearFecha(reserva.fin)}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                        String(reserva.estado) === "PENDIENTE"
+                          ? "bg-amber-100 text-amber-800 border-amber-200"
+                          : String(reserva.estado) === "CONFIRMADA"
+                          ? "bg-green-100 text-green-800 border-green-200"
+                          : String(reserva.estado) === "CANCELADA"
+                          ? "bg-gray-100 text-gray-600 border-gray-200"
+                          : "bg-red-100 text-red-800 border-red-200"
+                      }`}
+                    >
+                      {reserva.estado}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {String(reserva.estado) === "PENDIENTE" ? (
+                      <p className="text-gray-600">
+                        Pendiente de resolución
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-gray-800 font-medium">
+                          {reserva.resueltaPor?.nombre ?? "Resuelto"} -{" "}
+                          {formatearFecha(reserva.resueltaEn)}
+                        </p>
+                        {reserva.motivoResolucion ? (
+                          <p className="mt-1 text-sm text-gray-500">
+                            Motivo: {reserva.motivoResolucion}
+                          </p>
+                        ) : null}
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
 
       <p className="mt-6 text-sm text-gray-500">
