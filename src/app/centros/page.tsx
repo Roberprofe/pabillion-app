@@ -61,20 +61,27 @@ export default async function CentrosPage() {
                     .map((espacio) => (
                       <Card key={espacio.id} >
                         <CardHeader>
-                          <CardTitle>
+                          <CardTitle className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
                             <h3 className="min-w-0 break-words">{espacio.nombre}</h3>
+                            <Badge variant="outline" className={
+                              espacio.activo 
+                              ? "text-lime-600 border-lime-600" 
+                              : "text-rose-600 border-rose-600"
+                              }>
+                                {espacio.activo ? "activo" : "inactivo" }
+                        </Badge>
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
                           {espacio.horarios.length === 0 ? (
                             <h3>El espacio no cuenta con horarios</h3>
                           ) : (
-                            <ul>
+                            <ul className="mt-9 divide-y divide-gray-100">
                               {espacio.horarios.map((horario) => (
-                                <li key={horario.id} className="grid grid-cols-3 text-center gap-4 py-3 first:pt-0 last:pb-0">
-                                  <span>{horario.diaSemana}</span>
-                                  <span>{toHoursAndMinutes(horario.inicioMinuto)}</span>
-                                  <span>{toHoursAndMinutes(horario.finMinuto)}</span>
+                                <li key={horario.id} className="grid grid-cols-[1.5fr_1fr_1fr] items-center gap-4 py-3 first:pt-0 last:pb-0">
+                                  <span className="text-sm font-medium text-gray-800 text-left">{horario.diaSemana}</span>
+                                  <span className="text-sm text-gray-600 text-center tabular-nums">{toHoursAndMinutes(horario.inicioMinuto)}</span>
+                                  <span className="text-sm text-gray-600 text-center tabular-nums">{toHoursAndMinutes(horario.finMinuto)}</span>
                                 </li>
                               ))}
                             </ul>
@@ -83,13 +90,21 @@ export default async function CentrosPage() {
                           {espacio.cierres.length === 0 ? (
                             <span>El espacio no cuenta con cierres</span>
                           ) : (
-                            <ul className="mt-9">
+                            <ul className="mt-20 divide-y divide-gray-100">
                               {espacio.cierres.map((cierre) => (
-                                <li key={cierre.id} className="grid grid-cols-4 gap-4 text-center py-3 first:pt-0 last:pb-0">
-                                  <span>{cierre.motivo}</span>
-                                  <span>{cierre.inicio.toDateString()}</span>
-                                  <span>{cierre.fin.toDateString()}</span>
-                                  <Badge variant={"outline"} className={cierre.activo ? "text-lime-600 border-lime-600" : "text-rose-600 border-rose-600"}>{cierre.activo ? "activo" : "anulado"}</Badge>
+                                <li key={cierre.id} className="grid grid-cols-1 sm:grid-cols-[1.5fr_1fr_1fr_auto] items-center gap-3 sm:gap-4 py-4 first:pt-0 last:pb-0">
+                                  <span className="text-sm font-medium text-gray-800 text-left">{cierre.motivo}</span>
+                                  <span className="text-sm text-gray-600 sm:text-center">{cierre.inicio.toDateString()}</span>
+                                  <span className="text-sm text-gray-600 sm:text-center">{cierre.fin.toDateString()}</span>
+                                  <div className="sm:justify-self-end">
+                                    <Badge variant={"outline"} className={
+                                      cierre.activo 
+                                      ? "text-lime-600 border-lime-600" 
+                                      : "text-rose-600 border-rose-600"
+                                      }>
+                                      {cierre.activo ? "activo" : "anulado"}
+                                    </Badge>
+                                  </div>
                                 </li>
                               ))}
                               

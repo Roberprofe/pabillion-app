@@ -23,6 +23,7 @@ export async function obtenerEspaciosConHorariosCierres(){
         select: {
             id: true,
             nombre: true,
+            activo: true,
             centro: {
                 select: { id: true, nombre: true },
             },
