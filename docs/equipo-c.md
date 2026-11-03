@@ -41,8 +41,8 @@ Vamos a utilizar como ejemplo una actividad de entrenamiento de fútbol.
 
 Esta actividad puede organizarse en diferentes sesiones:
 
-| Sesión   | Fecha      | Horario     | Espacio |
-| -------- | ---------- | ----------- | ------- |
+| Sesión | Fecha | Horario | Espacio |
+|---|---|---|---|
 | Sesión 1 | 19/10/2026 | 17:00–18:00 | Campo 1 |
 | Sesión 2 | 21/10/2026 | 17:00–18:00 | Campo 1 |
 | Sesión 3 | 23/10/2026 | 17:00–18:00 | Campo 2 |
@@ -62,6 +62,7 @@ Esta información nos permite comprobar si un espacio puede utilizarse en la fec
 ### Qué necesitamos del equipo B
 
 Necesitamos conocer cómo se gestionan las reservas y qué información necesita el sistema para comprobar si una sesión puede realizarse en un espacio y horario determinados.
+
 
 ### Qué aporta el equipo C al equipo B
 
@@ -99,25 +100,25 @@ Los siguientes campos son una propuesta inicial para el diseño de los modelos `
 
 ### 5.1. Campos de Actividad
 
-| Campo                | Finalidad                                              | Relación                                                                         |
-| -------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| id                   | Identificar de forma única cada actividad.             | Clave primaria.                                                                  |
-| nombre               | Indicar el nombre de la actividad.                     | Sin relación directa obligatoria.                                                |
-| descripcion          | Explicar en qué consiste la actividad y sus objetivos. | Sin relación directa obligatoria.                                                |
-| duracionPrevista     | Indicar la duración habitual de la actividad.          | Sin relación directa obligatoria.                                                |
+| Campo | Finalidad | Relación |
+|---|---|---|
+| id | Identificar de forma única cada actividad. | Clave primaria. |
+| nombre | Indicar el nombre de la actividad. | Sin relación directa obligatoria. |
+| descripcion | Explicar en qué consiste la actividad y sus objetivos. | Sin relación directa obligatoria. |
+| duracionPrevista | Indicar la duración habitual de la actividad. | Sin relación directa obligatoria. |
 | participantesMaximos | Proponer un límite de participantes para la actividad. | Su relación con la capacidad del espacio debe coordinarse con los equipos A y B. |
 
 ### 5.2. Campos de Sesion
 
-| Campo           | Finalidad                                                                         | Relación                                                                                    |
-| --------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| id              | Identificar de forma única cada sesión.                                           | Clave primaria.                                                                             |
-| actividadId     | Identificar la actividad a la que pertenece la sesión.                            | Clave foránea hacia Actividad.                                                              |
-| espacioId       | Identificar el espacio donde se realizará la sesión.                              | Clave foránea hacia Espacio.                                                                |
-| fechaHoraInicio | Indicar la fecha y hora de inicio.                                                | Debe permitir comprobar conflictos de horario.                                              |
-| fechaHoraFin    | Indicar la fecha y hora de finalización.                                          | Debe permitir comprobar conflictos de horario.                                              |
-| estado          | Indicar la situación de la sesión, por ejemplo, prevista, confirmada o cancelada. | Los valores permitidos están pendientes de acordar.                                         |
-| ocupacionMaxima | Proponer un límite de ocupación específico para la sesión, si fuera necesario.    | Debe coordinarse con la capacidad del espacio y el límite de participantes de la actividad. |
+| Campo | Finalidad | Relación |
+|---|---|---|
+| id | Identificar de forma única cada sesión. | Clave primaria. |
+| actividadId | Identificar la actividad a la que pertenece la sesión. | Clave foránea hacia Actividad. |
+| espacioId | Identificar el espacio donde se realizará la sesión. | Clave foránea hacia Espacio. |
+| fechaHoraInicio | Indicar la fecha y hora de inicio. | Debe permitir comprobar conflictos de horario. |
+| fechaHoraFin | Indicar la fecha y hora de finalización. | Debe permitir comprobar conflictos de horario. |
+| estado | Indicar la situación de la sesión, por ejemplo, prevista, confirmada o cancelada. | Los valores permitidos están pendientes de acordar. |
+| ocupacionMaxima | Proponer un límite de ocupación específico para la sesión, si fuera necesario. | Debe coordinarse con la capacidad del espacio y el límite de participantes de la actividad. |
 
 ### 5.3. Relaciones y decisiones pendientes
 
@@ -136,49 +137,15 @@ Antes de implementar estos modelos, quedan pendientes las siguientes decisiones:
 
 Se han realizado comprobaciones manuales de la página `src/app/actividades/page.tsx` utilizando los datos de ejemplo de la base de datos local.
 
-| Prueba                                        | Resultado esperado                                                                           | Resultado obtenido                                                                                                                                        |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Acceder a la página de actividades.           | Mostrar el título y la información de planificación.                                         | Correcto. Se muestra «Actividades y sesiones» y el texto informativo.                                                                                     |
-| Consultar los centros registrados.            | Mostrar los centros y agrupar sus espacios debajo de cada uno.                               | Correcto. Se muestra «Centro Lúa (ejemplo)» con sus espacios.                                                                                             |
-| Consultar los espacios del centro de ejemplo. | Mostrar los espacios activos ordenados por nombre.                                           | Se muestran «Pista 1» y «Sala 2». La ordenación y el filtrado deben verificarse también con datos de prueba que permitan comprobar ambos comportamientos. |
-| Consultar un centro sin espacios activos.     | Mantener visible el centro e indicar que no tiene espacios activos.                          | Pendiente de comprobar con datos de prueba específicos.                                                                                                   |
-| Consultar una base de datos sin centros.      | Mostrar un mensaje indicando que no hay centros registrados.                                 | Correcto. Se observó el mensaje «No hay centros registrados» antes de cargar los datos de ejemplo.                                                        |
-| Comprobar el aviso de disponibilidad.         | Advertir que la lista no confirma disponibilidad ni la existencia de actividades o sesiones. | Correcto. El aviso aparece en la página.                                                                                                                  |
+| Prueba | Resultado esperado | Resultado obtenido |
+|---|---|---|
+| Acceder a la página de actividades. | Mostrar el título y la información de planificación. | Correcto. Se muestra «Actividades y sesiones» y el texto informativo. |
+| Consultar los centros registrados. | Mostrar los centros y agrupar sus espacios debajo de cada uno. | Correcto. Se muestra «Centro Lúa (ejemplo)» con sus espacios. |
+| Consultar los espacios del centro de ejemplo. | Mostrar los espacios activos ordenados por nombre. | Se muestran «Pista 1» y «Sala 2». La ordenación y el filtrado deben verificarse también con datos de prueba que permitan comprobar ambos comportamientos. |
+| Consultar un centro sin espacios activos. | Mantener visible el centro e indicar que no tiene espacios activos. | Pendiente de comprobar con datos de prueba específicos. |
+| Consultar una base de datos sin centros. | Mostrar un mensaje indicando que no hay centros registrados. | Correcto. Se observó el mensaje «No hay centros registrados» antes de cargar los datos de ejemplo. |
+| Comprobar el aviso de disponibilidad. | Advertir que la lista no confirma disponibilidad ni la existencia de actividades o sesiones. | Correcto. El aviso aparece en la página. |
 
 Las pruebas se han realizado en el entorno local. Las comprobaciones pendientes deberán realizarse con datos de prueba adecuados, sin eliminar registros existentes ni modificar datos compartidos. Los errores de conexión con la base de datos deben identificarse como errores y no confundirse con una lista vacía.
 
 Esta página sirve para consultar los centros y sus espacios activos como apoyo a la planificación. No implementa todavía la creación de actividades, la programación de sesiones ni la confirmación de reservas.
-
-## Pruebas C-04
-
-### Resultados esperados
-
-- Mostrar las actividades ordenadas alfabéticamente.
-- Mostrar la descripción y el estado de cada actividad.
-- Mostrar las sesiones ordenadas por fecha de inicio.
-- Mostrar el espacio y el centro de cada sesión.
-- Mostrar las fechas de inicio y fin en formato español y zona horaria `Europe/Madrid`.
-- Identificar las sesiones canceladas sin mostrarlas como programadas.
-- Mostrar las actividades que todavía no tienen sesiones.
-- Mostrar un mensaje cuando no existan actividades registradas.
-
-### Resultados observados
-
-Se ejecutó `pnpm run db:seed` para cargar datos de prueba en la base de datos local.
-
-Se comprobó la visualización de los siguientes casos:
-
-- Actividades activas e inactivas.
-- Sesiones programadas y canceladas.
-- Actividades sin sesiones.
-- Información de los espacios y sus centros.
-- Fechas y horas en formato español.
-- Visualización correcta de la sección de centros y espacios activos.
-
-La comprobación visual de la página `/actividades` fue satisfactoria.
-
-### Limitaciones
-
-- La página permite consultar información, pero no crear, modificar ni eliminar actividades o sesiones.
-- Los datos de prueba proceden del seed local y no representan datos reales.
-- La página no comprueba la disponibilidad de los espacios para futuras sesiones.
