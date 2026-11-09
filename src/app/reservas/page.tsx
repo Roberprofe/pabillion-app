@@ -51,17 +51,21 @@ export default async function ReservasPage({
     typeof estadoRecibido === "string" &&
     estadosValidos.includes(estadoRecibido as EstadoReservaFiltro);
 
+  // Comprobamos si no se ha recibido estado o está vacío.
+  const estadoVacio =
+    estadoRecibido === undefined || estadoRecibido === "";
+
   // Detectamos valores incorrectos o parámetros repetidos.
   const filtroInvalido =
     parametroRepetido ||
-    (estadoRecibido !== undefined && !estadoValido);
+    (!estadoVacio && !estadoValido);
 
-  // Si no hay filtro, mostramos todos.
+  // Si no hay filtro o está vacío, mostramos todos.
   // Si el filtro no es válido, también evitamos aplicarlo.
   const estadoSeleccionado: EstadoReservaFiltro =
-    estadoValido && !parametroRepetido
-      ? (estadoRecibido as EstadoReservaFiltro)
-      : "TODOS";
+    estadoVacio || !estadoValido || parametroRepetido
+      ? "TODOS"
+      : (estadoRecibido as EstadoReservaFiltro);
 
   const prisma = getPrisma();
 
@@ -296,9 +300,20 @@ export default async function ReservasPage({
       {/* Tabla de reservas y filtro */}
       <section className="mt-12 mb-12">
 
-        <h2 className="mb-6 text-xl font-bold">
+        <h2 className="mb-4 text-xl font-bold">
           Reservas
         </h2>
+
+        {/* Información del filtro y contador */}
+        <div className="mb-6 rounded-xl border p-4">
+          <p className="text-sm text-gray-600">
+            Filtro seleccionado: <strong>{estadoSeleccionado}</strong>
+          </p>
+
+          <p className="mt-2 text-sm text-gray-600">
+            Total de resultados: <strong>{reservas.length}</strong>
+          </p>
+        </div>
 
         {/* Formulario GET */}
         <form
@@ -353,7 +368,7 @@ export default async function ReservasPage({
             href="/reservas"
             className="rounded-lg border px-5 py-2.5 text-center font-medium hover:bg-gray-50"
           >
-            Limpiar
+            Quitar filtro
           </a>
         </form>
 
@@ -489,4 +504,3 @@ export default async function ReservasPage({
     </main>
   );
 }
-  
