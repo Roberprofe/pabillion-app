@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import { obtenerCentrosConEspacios } from "@/lib/data/centros";
-import { obtenerEspaciosConHorariosCierres, obtenerEspaciosEnCentro } from "@/lib/data/espacios";
+import { obtenerEspaciosConHorariosCierres, obtenerEspaciosEnCentro, buscarCentros } from "@/lib/data/espacios";
+import { FieldLabel } from "@/components/ui/field"
 
 export const metadata: Metadata = {
   title: "Centros y Espacios",
@@ -17,11 +20,28 @@ export function toHoursAndMinutes(totalMinutes=0) {
   return `${hours}:${minutes < 10 ? `0${minutes}` : `${minutes}`}`;
 }
 
-export default async function CentrosPage() {
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function CentrosPage({ searchParams }: Props) {
   await connection(); 
-  const centros = await obtenerCentrosConEspacios();
+  
   //const espacios = await obtenerEspaciosEnCentro();
   const espacios = await obtenerEspaciosConHorariosCierres();
+
+  const entrada = (await searchParams).q;
+  if (Array.isArray(entrada) || (typeof entrada === "string" && entrada.length > 80)) {
+    return (
+      <main>
+        <h1>Centros</h1>
+        <p role="alert">Usa un único texto de hasta 80 caracteres.</p>
+        <a href="/centros">Quitar filtro</a>
+      </main>
+    );
+  }
+  const q = (entrada ?? "").trim();
+  const centros = await buscarCentros(q);
   
   
   return (
@@ -34,6 +54,13 @@ export default async function CentrosPage() {
           Este es el registro de los centros que trabajan con nosotros.
         </p>
       </header>
+    <form action="/centros" method="get">
+      <FieldLabel htmlFor="centro-q">Nombre del centro</FieldLabel>
+      <Input className="max-w-sm" placeholder="Introduce el nombre del centro"  id="centro-q" name="q" type="search" maxLength={80} defaultValue={q} />
+      <Button className="m-2" variant="outline" type="submit">Buscar</Button>
+      <Button variant="outline" className="text-rose-600 hover:text-rose-600 border-rose-600"><a href="/centros">Quitar filtro</a></Button>
+    </form>
+    <p>{centros.length} centros encontrados</p>
 
       {centros.length === 0 ? (
         <Card>
