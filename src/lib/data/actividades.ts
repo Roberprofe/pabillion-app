@@ -1,11 +1,17 @@
 import "server-only";
 import { getPrisma } from "@/lib/prisma";
 
-// function to get all activities and sessions from db
-export async function obtenerActividadesConSesiones() {
-  // return all activities with sessions and especio and centro where that session will be
+export type SituacionActividad = "TODAS" | "ACTIVAS" | "INACTIVAS";
 
+// Get activities and their sessions, optionally filtering by activity status.
+export async function obtenerActividadesConSesiones(
+  situacion: SituacionActividad = "TODAS",
+) {
   return getPrisma().actividad.findMany({
+    // TODAS: no status condition.
+    // ACTIVAS: activo = true.
+    // INACTIVAS: activo = false.
+    where: situacion === "TODAS" ? {} : { activo: situacion === "ACTIVAS" },
     orderBy: {
       nombre: "asc",
     },

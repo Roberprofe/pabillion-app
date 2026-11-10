@@ -182,3 +182,35 @@ La comprobación visual de la página `/actividades` fue satisfactoria.
 - La página permite consultar información, pero no crear, modificar ni eliminar actividades o sesiones.
 - Los datos de prueba proceden del seed local y no representan datos reales.
 - La página no comprueba la disponibilidad de los espacios para futuras sesiones.
+
+## Pruebas C-05: Filtrar actividades por situación
+
+### Resultados esperados
+
+- Mostrar todas las actividades cuando no se indica un filtro.
+- Mostrar únicamente las actividades activas con `situacion=ACTIVAS`.
+- Mostrar únicamente las actividades inactivas con `situacion=INACTIVAS`.
+- Mantener las sesiones y sus datos relacionados.
+- Mostrar el filtro seleccionado y el número de resultados.
+- Mostrar un aviso cuando el filtro no sea válido o esté repetido.
+- Mostrar un mensaje específico cuando un filtro válido no tenga resultados.
+- Mantener la sección de centros y espacios independiente del filtro.
+
+### Comprobaciones realizadas
+
+| URL o caso                     | Resultado esperado                                            | Resultado observado |
+| ------------------------------ | ------------------------------------------------------------- | ------------------- |
+| `/actividades`                 | Mostrar todas las actividades.                                | [Completar]         |
+| `?situacion=TODAS`             | Mostrar todas las actividades.                                | [Completar]         |
+| `?situacion=ACTIVAS`           | Mostrar solo las actividades activas.                         | [Completar]         |
+| `?situacion=INACTIVAS`         | Mostrar solo las actividades inactivas.                       | [Completar]         |
+| `?situacion=INVENTADA`         | Mostrar un aviso de filtro no válido.                         | [Completar]         |
+| Parámetro `situacion` repetido | Mostrar un aviso de filtro no válido.                         | [Completar]         |
+| Actividad sin sesiones         | Mostrar la actividad y el mensaje correspondiente.            | [Completar]         |
+| Sección de centros y espacios  | Mantener su información sin aplicar el filtro de actividades. | [Completar]         |
+
+### Implementación
+
+El filtro se gestiona desde el servidor mediante el parámetro GET `situacion`.
+La consulta utiliza Prisma para filtrar las actividades por el campo `activo`.
+No se modifica la estructura de la base de datos ni los datos de prueba.
