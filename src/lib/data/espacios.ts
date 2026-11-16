@@ -37,3 +37,18 @@ export async function obtenerEspaciosConHorariosCierres(){
     });
 }
 
+export async function buscarCentros(q:string){
+  return getPrisma().centro.findMany({
+    where: q ? { nombre: { contains: q, mode: "insensitive" } } : undefined,
+    orderBy: [{ nombre: "asc" }, { id: "asc" }],
+      select: {
+        id: true,
+        nombre: true,
+        espacios: {
+          orderBy: { nombre: "asc" },
+          select: { id: true, nombre: true, activo: true },
+        },
+      },
+  });
+}
+

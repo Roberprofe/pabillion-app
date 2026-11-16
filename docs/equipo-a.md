@@ -145,7 +145,7 @@ Nosotros damos a los otros equipos los datos de los espacios, sus horarios, y su
 
 |   Caso   |   Datos preparados   |   Qué hago     |   Qué debería pasar   |   Qué pasó    |   Pendiente   |
 |:--------:|:--------------------:|:--------------:|:---------------------:|:-------------:|:-------------:|
-|   Datos ordenados |Tres centros con nombres desordenados alfabñeticamente | Accedo al listado de centros | Aparecen los centros ordenados alfabéticamente | Aparecen los centros ordenados alfabéticamente |
+|   Datos ordenados |Tres centros con nombres desordenados alfabeticamente | Accedo al listado de centros | Aparecen los centros ordenados alfabéticamente | Aparecen los centros ordenados alfabéticamente |
 |   Renombrado  | Hay un centro con un nombre concreto a cambiar | Accedo a la base de datos y lo cambio emulando el comportamiento de una futura vista | El centro aparece listado en el orden que debe | El centro aparece listado en el orden que debe
 |   Espacio activo/inactivo | Un Espacio con su estado en activo y otro en inactivo | Cambio ambos al valor opuesto | Ambos centros aparecen con el valor opuesto | ambos centros aparecen con el valor opuesto
 |   Ausencia de centros y espacios  | La lista de centros y espacio vacía | Compruebo que el mensaje conforme no hay centros | Aparece el mensaje &#58; Actualmente no hay centros registrados | Aparece el mensaje &#58; Actualmente no hay centros registrados
@@ -163,3 +163,14 @@ Nosotros damos a los otros equipos los datos de los espacios, sus horarios, y su
 |Ausencia de horarios y cierres     | Espacio sin horarios ni cierres                                    | Ambos casos muestran mensajes personalizados que indican su ausencia                               | Ambos casos muestran mensajes personalizados que indican su ausencia||
 
 
+### Pruebas A-05
+
+| Caso de prueba | Parámetro / URL | Resultado esperado |
+| :---- | :---- | :---- |
+| Sin parámetro `q` | `/centros` | Muestra todos los centros sin ninguna incidencia |
+| Con minúsculas y tilde | `?q=Lúa` | Muestra el centro correctamente, en este caso, Lúa |
+| Con mayúsuclas y tilde | `?q=LÚA` | Muestra el centro correctamente |
+| Texto inexistente | `?q=texto-indexistente` | Muestra un mensaje que no hay Centros con ese nombre |
+| Espacios exteriores | `?q=%20%20Lúa%20%20` | Elimina los espacios iniciales y finales antes de buscar |
+| Parámetro `q` repetido | `?q=Lúa&q=Mar` | Detecta el parámetro repetido y da error |
+| Más de 80 caracteres | `?q=abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789` | Rechaza el texto y muestra el mensaje de error |
