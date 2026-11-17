@@ -183,3 +183,49 @@ Acuerdos compartidos propuestos: mismos identificadores de espacio, formato de f
 - **Por qué bloquea:** no sabemos cuál prevalece ni quién resuelve el conflicto, y afecta a la regla de no cancelar en silencio.
 - **Propuesta provisional:** ninguna; hay que acordarlo con C.
 - **Quién puede ayudarnos:** el equipo C y el profesor.
+
+
+## Filtro de reservas por estado
+
+La página `src/app/reservas/page.tsx` permite consultar las reservas y filtrarlas por su estado mediante un formulario HTML GET.
+
+### Funcionamiento
+
+- El formulario envía el estado seleccionado mediante la URL.
+- La página recibe los parámetros usando `searchParams`.
+- Se comprueba en el servidor que el estado recibido sea válido.
+- Si el parámetro aparece varias veces o contiene un valor incorrecto, se considera un filtro no válido.
+- La función `obtenerReservas()` recibe el estado validado.
+- Prisma aplica el filtro mediante `where`, directamente en la base de datos.
+- El estado `TODOS` permite consultar todas las reservas.
+
+### Estados permitidos
+
+| Valor | Significado |
+|---|---|
+| TODOS | Todas las reservas |
+| PENDIENTE | Solicitud pendiente |
+| CONFIRMADA | Reserva confirmada |
+| RECHAZADA | Solicitud rechazada |
+| CANCELADA | Reserva cancelada |
+
+### Pruebas del filtro
+
+| URL de prueba | Resultado esperado | Resultado observado |
+|---|---|---|
+| `/reservas` | Mostrar todas las reservas | Pendiente de comprobar |
+| `/reservas?estado=TODOS` | Mostrar todas las reservas | Pendiente de comprobar |
+| `/reservas?estado=PENDIENTE` | Mostrar solo las pendientes | Pendiente de comprobar |
+| `/reservas?estado=CONFIRMADA` | Mostrar solo las confirmadas | Pendiente de comprobar |
+| `/reservas?estado=RECHAZADA` | Mostrar solo las rechazadas | Pendiente de comprobar |
+| `/reservas?estado=CANCELADA` | Mostrar solo las canceladas | Pendiente de comprobar |
+| `/reservas?estado=INVENTADO` | Avisar de filtro no válido | Pendiente de comprobar |
+| `/reservas?estado=PENDIENTE&estado=CANCELADA` | Avisar de parámetro repetido | Pendiente de comprobar |
+
+### Comportamiento ante errores
+
+- Si el filtro es válido pero no hay resultados, se muestra un mensaje indicando que no existen reservas para ese estado.
+- Si el filtro no es válido, se muestra un aviso y se consultan todas las reservas.
+- Si falla la conexión con la base de datos, se muestra un mensaje de error.
+
+El filtro es de solo lectura: no crea, modifica, aprueba, rechaza ni cancela reservas.
