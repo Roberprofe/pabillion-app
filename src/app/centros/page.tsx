@@ -1,20 +1,31 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { obtenerCentrosConEspacios } from "@/lib/data/centros";
-import { obtenerEspaciosConHorariosCierres, obtenerEspaciosEnCentro, buscarCentros } from "@/lib/data/espacios";
-import { FieldLabel } from "@/components/ui/field"
+import {
+  obtenerEspaciosConHorariosCierres,
+  obtenerEspaciosEnCentro,
+  buscarCentros,
+} from "@/lib/data/espacios";
+import { FieldLabel } from "@/components/ui/field";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Centros y Espacios",
   description: "Búsqueda de centros y espacios disponibles.",
 };
 
-export function toHoursAndMinutes(totalMinutes=0) {
+export function toHoursAndMinutes(totalMinutes = 0) {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return `${hours}:${minutes < 10 ? `0${minutes}` : `${minutes}`}`;
@@ -24,14 +35,28 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+const resultados: Record<string, string> = {
+  creado: "Centro correctaente creado",
+};
+
 export default async function CentrosPage({ searchParams }: Props) {
-  await connection(); 
-  
+  const parametros = await searchParams;
+  const codigo = parametros.resultado;
+  const mensaje =
+    typeof codigo === "string" && Object.hasOwn(resultados, codigo)
+      ? resultados[codigo]
+      : null;
+
+  await connection();
+
   //const espacios = await obtenerEspaciosEnCentro();
   const espacios = await obtenerEspaciosConHorariosCierres();
 
   const entrada = (await searchParams).q;
-  if (Array.isArray(entrada) || (typeof entrada === "string" && entrada.length > 80)) {
+  if (
+    Array.isArray(entrada) ||
+    (typeof entrada === "string" && entrada.length > 80)
+  ) {
     return (
       <main>
         <h1>Centros</h1>
@@ -42,25 +67,51 @@ export default async function CentrosPage({ searchParams }: Props) {
   }
   const q = (entrada ?? "").trim();
   const centros = await buscarCentros(q);
-  
-  
+
   return (
     <main className="mx-auto max-w-5xl space-y-8 px-6 py-10">
-      <header className="max-w-2xl space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Centros y Espacios
-        </h1>
-        <p className="text-muted-foregound">
-          Este es el registro de los centros que trabajan con nosotros.
-        </p>
+      <header className="space-y-2 flex flex-col flex-row items-center justify-between">
+        <div className="max-w-2xl space-y-3">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Centros y Espacios
+          </h1>
+          <p className="text-muted-foregound">
+            Este es el registro de los centros que trabajan con nosotros.
+          </p>
+        </div>
+        <Button
+          asChild
+          variant="outline"
+          className="text-lime-600 hover:text-lime-600 border-lime-600"
+        >
+          <Link href="/centros/nuevo">Nuevo centro</Link>
+        </Button>
       </header>
-    <form action="/centros" method="get">
-      <FieldLabel htmlFor="centro-q">Nombre del centro</FieldLabel>
-      <Input className="max-w-sm" placeholder="Introduce el nombre del centro"  id="centro-q" name="q" type="search" maxLength={80} defaultValue={q} />
-      <Button className="m-2" variant="outline" type="submit">Buscar</Button>
-      <Button variant="outline" className="text-rose-600 hover:text-rose-600 border-rose-600"><a href="/centros">Quitar filtro</a></Button>
-    </form>
-    <p>{centros.length} centros encontrados</p>
+      <form action="/centros" method="get">
+        <FieldLabel htmlFor="centro-q">Nombre del centro</FieldLabel>
+        <Input
+          className="max-w-sm"
+          placeholder="Introduce el nombre del centro"
+          id="centro-q"
+          name="q"
+          type="search"
+          maxLength={80}
+          defaultValue={q}
+        />
+        <Button className="m-2" variant="outline" type="submit">
+          Buscar
+        </Button>
+        <Button
+          variant="outline"
+          className="text-rose-600 hover:text-rose-600 border-rose-600"
+        >
+          <a href="/centros">Quitar filtro</a>
+        </Button>
+      </form>
+      <p className="empty:hidden rounded-lg border border-lime-600 bg-lime-50 p-4 text-sm text-lime-600">
+        {mensaje}
+      </p>
+      <p>{centros.length} centros encontrados</p>
 
       {centros.length === 0 ? (
         <Card>
@@ -75,7 +126,10 @@ export default async function CentrosPage({ searchParams }: Props) {
           </CardHeader>
         </Card>
       ) : (
-        <section aria-label="Centros registrados" className="grid gap-8 md:grid-cols-1">
+        <section
+          aria-label="Centros registrados"
+          className="grid gap-8 md:grid-cols-1"
+        >
           {centros.map((centro) => (
             <section key={centro.id}>
               <h2 className="font-bold">{centro.nombre}</h2>
@@ -86,17 +140,22 @@ export default async function CentrosPage({ searchParams }: Props) {
                   {espacios
                     .filter((espacio) => espacio.centro.id === centro.id)
                     .map((espacio) => (
-                      <Card key={espacio.id} >
+                      <Card key={espacio.id}>
                         <CardHeader>
                           <CardTitle className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                            <h3 className="min-w-0 break-words">{espacio.nombre}</h3>
-                            <Badge variant="outline" className={
-                              espacio.activo 
-                              ? "text-lime-600 border-lime-600" 
-                              : "text-rose-600 border-rose-600"
-                              }>
-                                {espacio.activo ? "activo" : "inactivo" }
-                        </Badge>
+                            <h3 className="min-w-0 break-words">
+                              {espacio.nombre}
+                            </h3>
+                            <Badge
+                              variant="outline"
+                              className={
+                                espacio.activo
+                                  ? "text-lime-600 border-lime-600"
+                                  : "text-rose-600 border-rose-600"
+                              }
+                            >
+                              {espacio.activo ? "activo" : "inactivo"}
+                            </Badge>
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -105,10 +164,19 @@ export default async function CentrosPage({ searchParams }: Props) {
                           ) : (
                             <ul className="mt-9 divide-y divide-gray-100">
                               {espacio.horarios.map((horario) => (
-                                <li key={horario.id} className="grid grid-cols-[1.5fr_1fr_1fr] items-center gap-4 py-3 first:pt-0 last:pb-0">
-                                  <span className="text-sm font-medium text-gray-800 text-left">{horario.diaSemana}</span>
-                                  <span className="text-sm text-gray-600 text-center tabular-nums">{toHoursAndMinutes(horario.inicioMinuto)}</span>
-                                  <span className="text-sm text-gray-600 text-center tabular-nums">{toHoursAndMinutes(horario.finMinuto)}</span>
+                                <li
+                                  key={horario.id}
+                                  className="grid grid-cols-[1.5fr_1fr_1fr] items-center gap-4 py-3 first:pt-0 last:pb-0"
+                                >
+                                  <span className="text-sm font-medium text-gray-800 text-left">
+                                    {horario.diaSemana}
+                                  </span>
+                                  <span className="text-sm text-gray-600 text-center tabular-nums">
+                                    {toHoursAndMinutes(horario.inicioMinuto)}
+                                  </span>
+                                  <span className="text-sm text-gray-600 text-center tabular-nums">
+                                    {toHoursAndMinutes(horario.finMinuto)}
+                                  </span>
                                 </li>
                               ))}
                             </ul>
@@ -119,22 +187,33 @@ export default async function CentrosPage({ searchParams }: Props) {
                           ) : (
                             <ul className="mt-20 divide-y divide-gray-100">
                               {espacio.cierres.map((cierre) => (
-                                <li key={cierre.id} className="grid grid-cols-1 sm:grid-cols-[1.5fr_1fr_1fr_auto] items-center gap-3 sm:gap-4 py-4 first:pt-0 last:pb-0">
-                                  <span className="text-sm font-medium text-gray-800 text-left">{cierre.motivo}</span>
-                                  <span className="text-sm text-gray-600 sm:text-center">{cierre.inicio.toDateString()}</span>
-                                  <span className="text-sm text-gray-600 sm:text-center">{cierre.fin.toDateString()}</span>
+                                <li
+                                  key={cierre.id}
+                                  className="grid grid-cols-1 sm:grid-cols-[1.5fr_1fr_1fr_auto] items-center gap-3 sm:gap-4 py-4 first:pt-0 last:pb-0"
+                                >
+                                  <span className="text-sm font-medium text-gray-800 text-left">
+                                    {cierre.motivo}
+                                  </span>
+                                  <span className="text-sm text-gray-600 sm:text-center">
+                                    {cierre.inicio.toDateString()}
+                                  </span>
+                                  <span className="text-sm text-gray-600 sm:text-center">
+                                    {cierre.fin.toDateString()}
+                                  </span>
                                   <div className="sm:justify-self-end">
-                                    <Badge variant={"outline"} className={
-                                      cierre.activo 
-                                      ? "text-lime-600 border-lime-600" 
-                                      : "text-rose-600 border-rose-600"
-                                      }>
+                                    <Badge
+                                      variant={"outline"}
+                                      className={
+                                        cierre.activo
+                                          ? "text-lime-600 border-lime-600"
+                                          : "text-rose-600 border-rose-600"
+                                      }
+                                    >
                                       {cierre.activo ? "activo" : "anulado"}
                                     </Badge>
                                   </div>
                                 </li>
                               ))}
-                              
                             </ul>
                           )}
                         </CardContent>
@@ -148,5 +227,4 @@ export default async function CentrosPage({ searchParams }: Props) {
       )}
     </main>
   );
-  
 }
