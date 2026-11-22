@@ -1,4 +1,4 @@
-
+import Link from "next/link";
 import { connection } from "next/server";
 import { getPrisma } from "@/lib/prisma";
 import { obtenerReservas } from "@/lib/data/reservas";
@@ -30,6 +30,7 @@ function formatearFecha(fecha: Date | string | null) {
 type ReservasPageProps = {
   searchParams: Promise<{
     estado?: string | string[];
+    resultado?: string | string[];
   }>;
 };
 
@@ -40,6 +41,11 @@ export default async function ReservasPage({
 
   // Esperamos a que Next.js nos entregue los parámetros de la URL.
   const parametros = await searchParams;
+
+  const resultadoRecibido = parametros.resultado;
+
+  const solicitudCreada =
+    resultadoRecibido === "creado";
 
   const estadoRecibido = parametros.estado;
 
@@ -157,19 +163,33 @@ export default async function ReservasPage({
   return (
     <main className="mx-auto max-w-5xl p-6 md:p-10">
 
-      <header className="mb-8">
-        <p className="mb-2 text-sm font-medium text-blue-600">
-          GESTIÓN DE ESPACIOS
-        </p>
+<header className="mb-8">
+  <p className="mb-2 text-sm font-medium text-blue-600">
+    GESTIÓN DE ESPACIOS
+  </p>
 
-        <h1 className="text-3xl font-bold tracking-tight">
-          Solicitudes y reservas
-        </h1>
+  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <h1 className="text-3xl font-bold tracking-tight">
+      Solicitudes y reservas
+    </h1>
 
-        <p className="mt-3 text-gray-600">
-          Consulta los centros registrados y sus espacios activos.
-        </p>
-      </header>
+    <Link
+      href="/reservas/nueva"
+      className="inline-flex w-fit items-center justify-center rounded-lg bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700"
+    >
+      + Nueva solicitud
+    </Link>
+  </div>
+
+  <p className="mt-3 text-gray-600">
+    Consulta los centros registrados y sus espacios activos.
+  </p>
+</header>
+{solicitudCreada && (
+  <div className="mb-6 rounded-lg border border-green-300 bg-green-50 p-4 text-green-800">
+    Solicitud registrada correctamente, pendiente de revisión.
+  </div>
+)}
 
       {/* Lista de centros activos */}
       <section className="mb-8">
