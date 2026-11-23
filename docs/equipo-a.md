@@ -175,6 +175,14 @@ Nosotros damos a los otros equipos los datos de los espacios, sus horarios, y su
 | Parámetro `q` repetido | `?q=Lúa&q=Mar` | Detecta el parámetro repetido y da error |
 | Más de 80 caracteres | `?q=abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789` | Rechaza el texto y muestra el mensaje de error |
 
+### Pruebas A-06
+
+| Caso | Datos concretos | Esperado | Observado |
+|---|---|---|---|
+| Alta válida de centro | Nombre: "Centro Prueba" (y campos válidos según issue) | Redirige a `/centros?resultado=creado`, se guarda la fila con defaults/valores del servidor, aparece en `/centros` y persiste tras recargar | Redirigió a `/centros?resultado=creado`, mostró el aviso y apareció "Centro Prueba" en el listado. La BD aparece con los valores por defecto correctos y persisten tras recargar |
+| Datos inválidos (vacío, formato o límite) | Nombre vacío o fuera de rango | No escribe en BD y redirige a `/centros/nuevo?error=datos` mostrando el mensaje correspondiente | Al intentar introducir un nombre vacío no redirige y aparece el mensaje "completa este campo", en este caso no redirige a `/centros/nuevo?error=datos`. Al intentar introducir un nombre de centro superior a los 80 caracteres aparece el mensaje "El centro ha de contener entre 0 y 80 caracteres" y redirige a `/centros/nuevo?error=datos`|
+| Duplicado | Nombre o identificador ya existente en un centro previo | No crea fila duplicada y redirige a `/centros/nuevo?error=duplicado` | Al intentar introducir el nombre de un centro ya existente sale el mensaje "Un centro con ese nombre ya existe." y redirige a `centros/nuevo?error=duplicado`. El centro no se duplica en la base de datos |
+
 ## Documentación A-06
 
 ### Finalidad y recorrido de uso con ruta real.
