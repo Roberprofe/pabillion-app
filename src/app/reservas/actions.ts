@@ -1,115 +1,106 @@
-
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { crearSolicitudReserva } from "@/lib/data/mutations/reservas";
-function obtenerCampo(formData: FormData, nombre: string) {
-  const valores = formData.getAll(nombre);
+import {
+  EspacioNoValidoError,
+  insertarSolicitudPendiente,
+  SolicitanteNoValidoError,
+} from "@/lib/mutations/reservas";
 
-  // Cada campo debe aparecer exactamente una vez.
-  if (valores.length !== 1) {
-    return null;
-  }
+// Un único texto no vacío por campo. Rechaza campos ausentes, repetidos,
+// vacíos o enviados como archivo.
+function leerCampo(formData: FormData, nombre: string): string | null {
+  const valores = formData.getAll(nombre);
+  if (valores.length !== 1) return null;
 
   const valor = valores[0];
-
-  // No aceptamos archivos ni otros tipos de datos.
-  if (typeof valor !== "string") {
-    return null;
-  }
+  if (typeof valor !== "string") return null;
 
   const texto = valor.trim();
-
-  if (texto.length === 0) {
-    return null;
-  }
-
+  if (texto.length === 0 || texto.length > 100) return null;
   return texto;
 }
 
-function fechaValida(valor: string) {
-  // Exigimos una fecha ISO con zona horaria.
-  const formatoISO =
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}(Z|[+-]\d{2}:\d{2})$/;
+// Instante ISO 8601 con zona explícita (Z o ±HH:MM), por ejemplo
+// 2026-12-01T09:00:00.000Z, que es lo que envía el formulario.
+// Sin zona se rechaza: el servidor no adivina el desplazamiento.
+const FORMATO_ISO_CON_ZONA =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/;
 
-  if (!formatoISO.test(valor)) {
-    return false;
+function leerInstante(texto: string): Date | null {
+  const partes = FORMATO_ISO_CON_ZONA.exec(texto);
+  if (!partes) return null;
+
+  const [, anio, mes, dia, hora, minuto, segundo = "0"] = partes;
+  // Rechaza fechas imposibles (30 de febrero, 25:00...) en vez de dejar que
+  // Date las desplace al día siguiente.
+  const calendario = new Date(Date.UTC(Number(anio), Number(mes) - 1, Number(dia)));
+  if (
+    calendario.getUTCFullYear() !== Number(anio) ||
+    calendario.getUTCMonth() !== Number(mes) - 1 ||
+    calendario.getUTCDate() !== Number(dia) ||
+    Number(hora) > 23 ||
+    Number(minuto) > 59 ||
+    Number(segundo) > 59
+  ) {
+    return null;
   }
 
-  const fecha = new Date(valor);
-
-  return !Number.isNaN(fecha.getTime());
+  const instante = new Date(texto);
+  return Number.isNaN(instante.getTime()) ? null : instante;
 }
 
-export async function registrarSolicitud(formData: FormData) {
-  const solicitanteId = obtenerCampo(
-    formData,
-    "solicitanteId",
-  );
+export async function crearSolicitud(formData: FormData): Promise<void> {
+  // Solo se leen estos cuatro campos. Estado, responsable o resolución que
+  // envíe el navegador se ignoran: PENDIENTE lo fija el servidor.
+  const solicitanteId = leerCampo(formData, "solicitanteId");
+  const espacioId = leerCampo(formData, "espacioId");
+  const inicioTexto = leerCampo(formData, "inicio");
+  const finTexto = leerCampo(formData, "fin");
 
-  const espacioId = obtenerCampo(
-    formData,
-    "espacioId",
-  );
-
-  const inicio = obtenerCampo(formData, "inicio");
-  const fin = obtenerCampo(formData, "fin");
-
-  // Comprobamos que todos los campos estén completos.
-  if (!solicitanteId || !espacioId || !inicio || !fin) {
+  if (!solicitanteId || !espacioId || !inicioTexto || !finTexto) {
     redirect("/reservas/nueva?error=campos");
   }
 
-  // Validamos el formato de las fechas.
-  if (!fechaValida(inicio) || !fechaValida(fin)) {
+  const inicio = leerInstante(inicioTexto);
+  const fin = leerInstante(finTexto);
+  if (!inicio || !fin) {
     redirect("/reservas/nueva?error=fecha");
   }
 
-  const fechaInicio = new Date(inicio);
-  const fechaFin = new Date(fin);
-
-  // La fecha de inicio debe ser futura.
-  if (fechaInicio.getTime() <= Date.now()) {
+  if (inicio.getTime() <= Date.now()) {
     redirect("/reservas/nueva?error=pasado");
   }
 
-  // La fecha de fin debe ser posterior a la de inicio.
-  if (fechaFin.getTime() <= fechaInicio.getTime()) {
+  if (fin.getTime() <= inicio.getTime()) {
     redirect("/reservas/nueva?error=orden");
   }
 
-  let errorGuardado = "";
+  let fallo: "solicitante" | "espacio" | "guardar" | null = null;
+  let idCreada = "";
 
   try {
-    await crearSolicitudReserva({
-      solicitanteId,
-      espacioId,
-      inicio,
-      fin,
-    });
+    const creada = await insertarSolicitudPendiente({ solicitanteId, espacioId, inicio, fin });
+    idCreada = creada.id;
   } catch (error) {
-    console.error("Error al registrar solicitud:", error);
-
-    if (error instanceof Error) {
-      if (error.message === "SOLICITANTE_INVALIDO") {
-        errorGuardado = "solicitante";
-      } else if (error.message === "ESPACIO_INVALIDO") {
-        errorGuardado = "espacio";
-      }
-    }
-
-    if (!errorGuardado) {
-      errorGuardado = "guardar";
+    if (error instanceof SolicitanteNoValidoError) {
+      fallo = "solicitante";
+    } else if (error instanceof EspacioNoValidoError) {
+      fallo = "espacio";
+    } else {
+      // No se muestran detalles internos; se dejan en el registro del servidor.
+      console.error("Error al registrar la solicitud:", error);
+      fallo = "guardar";
     }
   }
 
-  if (errorGuardado) {
-    redirect(`/reservas/nueva?error=${errorGuardado}`);
+  if (fallo) {
+    redirect(`/reservas/nueva?error=${fallo}`);
   }
 
   revalidatePath("/reservas");
-
-  redirect("/reservas?resultado=creado&estado=PENDIENTE");
+  // La página solo confirma si encuentra esa solicitud PENDIENTE en la base.
+  redirect(`/reservas?estado=PENDIENTE&creada=${encodeURIComponent(idCreada)}`);
 }
