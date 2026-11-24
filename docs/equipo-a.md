@@ -174,3 +174,41 @@ Nosotros damos a los otros equipos los datos de los espacios, sus horarios, y su
 | Espacios exteriores | `?q=%20%20Lúa%20%20` | Elimina los espacios iniciales y finales antes de buscar |
 | Parámetro `q` repetido | `?q=Lúa&q=Mar` | Detecta el parámetro repetido y da error |
 | Más de 80 caracteres | `?q=abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789` | Rechaza el texto y muestra el mensaje de error |
+
+### Pruebas A-06
+
+| Caso | Datos concretos | Esperado | Observado |
+|---|---|---|---|
+| Alta válida de centro | Nombre: "Centro Prueba" (y campos válidos según issue) | Redirige a `/centros?resultado=creado`, se guarda la fila con defaults/valores del servidor, aparece en `/centros` y persiste tras recargar | Redirigió a `/centros?resultado=creado`, mostró el aviso y apareció "Centro Prueba" en el listado. La BD aparece con los valores por defecto correctos y persisten tras recargar |
+| Datos inválidos (vacío, formato o límite) | Nombre vacío o fuera de rango | No escribe en BD y redirige a `/centros/nuevo?error=datos` mostrando el mensaje correspondiente | Al intentar introducir un nombre vacío no redirige y aparece el mensaje "completa este campo", en este caso no redirige a `/centros/nuevo?error=datos`. Al intentar introducir un nombre de centro superior a los 80 caracteres aparece el mensaje "El centro ha de contener entre 0 y 80 caracteres" y redirige a `/centros/nuevo?error=datos`|
+| Duplicado | Nombre o identificador ya existente en un centro previo | No crea fila duplicada y redirige a `/centros/nuevo?error=duplicado` | Al intentar introducir el nombre de un centro ya existente sale el mensaje "Un centro con ese nombre ya existe." y redirige a `centros/nuevo?error=duplicado`. El centro no se duplica en la base de datos |
+
+## Documentación A-06
+
+### Finalidad y recorrido de uso con ruta real.
+La finalidad es crear nuevos centros pulsando el botón adecuado. Al pulsarlo, te redirige a nuevo/page.tsx donde hay un formulario que proviene de nuevo/formulario.tsx que exige un nombre para el centro. Al introducirlo, en actions.ts se comprueba que los datos son válidos. Finalmente, en lib/mutations se inserta el nuevo centro con sus datos.
+
+### Campos, requisitos y resultados
+En el formulario se pide un único dato, el nombre del centro. Este no puede ser vacío, tiene que ser menor a 80 caracteres y no puede haber otro centro con el mismo nombre. El resultado de pulsar el botón de enviar puede resultar en 3 formas, error sobre la longitud del nombre, error sobre un centro duplicado y mensaje de éxito incorporando los datos a la base de datos. 
+
+### Archivos y responsabilidades
+
+`actions.ts` (../src/app/centros/actions.ts) | `crearCentro`: recibe `FormData`, valida, coordina la escritura, revalida y navega
+
+`centros.ts` (../src/lib/mutations/centros.ts) | `insertarCentro`: comprueba el nombre y crea el centro. Detecta el conflicto de unicidad (P2002)
+
+`formulario.tsx` (../src/app/centros/nuevo/formulario.tsx) | Campo y botones con componentes shadcn
+
+`page.tsx` (../src/app/centros/nuevo/page.tsx) | Pantalla del alta y mensajes de error
+
+`page.tsx` (../src/app/centros/page.tsx) | Enlace a 'Nuevo centro' con un botón y confirmación de éxito
+
+### Decisiones técnicas
+
+- Para la unicidad hemos usado `findUnique` que hace una consulta previa aunque la restricción real se realiza llamando a Prisma y lanza un error P2002 si hay duplicidad.
+- `FormData` no se transforma en datos de Prisma, solo lee nombre y solo guarda ese campo.
+
+### Pendientes
+
+- Falta autenticación de usuario para crear centros. Actualmente cualquiera puede crear un centro. 
+- No distingue entre minúsculas y mayúsculas.
